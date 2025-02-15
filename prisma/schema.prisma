@@ -16,33 +16,51 @@ datasource db {
 model Game {
   id Int @id @default(autoincrement())
   nama String
-  ronde Ronde[]
-  skor Skor[]
+  maxRonde Int
+  player Player[]
+  round Ronde[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Player {
-  id Int @id @default(autoincrement())
-  nama_pemain String
-  skor Skor[]
+  id         Int      @id @default(autoincrement())
+  nama_player String
+  game_id    Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  game       Game @relation(fields: [game_id], references: [id], onDelete: Cascade)
+  scores     Skor[]  // Relasi: 1 pemain bisa memiliki banyak skor
 }
 
 model Ronde {
-  id Int @id @default(autoincrement())
-  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  gameId Int 
-  jumlahRonde Int
-  skor Skor[]
+ id        Int       @id @default(autoincrement())
+  game_id   Int
+  round_no  Int
+  status    RoundStatus
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  game  Game @relation(fields: [game_id], references: [id], onDelete: Cascade)
+  scores Skor[] // Relasi: 1 ronde bisa memiliki banyak skor
 }
 
 model Skor {
-  id Int @id @default(autoincrement())
-  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  gameId Int
-  ronde Ronde @relation(fields: [rondeId], references: [id], onDelete: Cascade)
-  rondeId Int
-  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  playerId Int
-  Score Decimal
+  id        Int       @id @default(autoincrement())
+  round_id  Int
+  player_id Int
+  skor      Int
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  round  Ronde @relation(fields: [round_id], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [player_id], references: [id], onDelete: Cascade)
+}
+
+// ENUM untuk status ronde
+enum RoundStatus {
+  PENDING
+  ACTIVE
+  FINISHED
 }

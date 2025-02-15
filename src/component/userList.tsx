@@ -19,9 +19,9 @@ export default function UserList() {
   // 🔥 Ambil data pengguna dari API
   useEffect(() => {
     const fetchGames = async () => {
-      const response = await axios.get('/api/users');
+      const response = await axios.get('/api/player');
       console.log(response.data);
-      setUsers(response.data.games);
+      setUsers(response.data.players);
       setLoading(false);
     };
     
@@ -39,7 +39,7 @@ export default function UserList() {
     
     try {
       console.log(newName);
-      const response = await axios.post('/api/users', { nama: newName });
+      const response = await axios.post('/api/player', { nama_pemain: newName });
       if (response.data) {
         setUsers([...users, response.data]);
         setNewName('');
@@ -51,7 +51,7 @@ export default function UserList() {
 
   // 🔥 Hapus pengguna
   const deleteUser = async (id: number) => {
-    await axios.delete('/api/users', { data: { id } });
+    await axios.delete('/api/player', { data: { id } });
     setUsers(users.filter((user) => user.id !== id));
   };
 
