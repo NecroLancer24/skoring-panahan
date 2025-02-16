@@ -35,7 +35,7 @@ model Player {
 }
 
 model Ronde {
- id        Int       @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   game_id   Int
   round_no  Int
   status    RoundStatus
@@ -43,18 +43,21 @@ model Ronde {
   updatedAt DateTime  @updatedAt
 
   game  Game @relation(fields: [game_id], references: [id], onDelete: Cascade)
-  scores Skor[] // Relasi: 1 ronde bisa memiliki banyak skor
+  scores Skor[]
+
+  @@unique([game_id, round_no])
 }
 
 model Skor {
   id        Int       @id @default(autoincrement())
-  round_id  Int
+  game_id   Int
+  round_no  Int
   player_id Int
   skor      Int
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  round  Ronde @relation(fields: [round_id], references: [id], onDelete: Cascade)
+  round  Ronde @relation(fields: [game_id, round_no], references: [game_id, round_no], onDelete: Cascade)
   player Player @relation(fields: [player_id], references: [id], onDelete: Cascade)
 }
 
