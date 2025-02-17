@@ -33,6 +33,7 @@ export default function ScoringGame() {
   const [game, setGame] = useState<Game | null>(null);
   const [scores, setScores] = useState<GameScores>({});
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     const fetchGame = async () => {
@@ -89,6 +90,7 @@ export default function ScoringGame() {
   };
 
   const handleSaveScores = async () => {
+    setIsSaving(true);
     try {
       const pathParts = window.location.pathname.split('/');
       const gameId = pathParts[pathParts.length - 1];
@@ -125,6 +127,8 @@ export default function ScoringGame() {
       window.location.href = '/gamelist';
     } catch (error) {
       console.error("Error saving scores:", error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -267,6 +271,16 @@ export default function ScoringGame() {
           </div>
         </div>
       </div>
+
+      {/* Loading Modal */}
+      {isSaving && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex items-center space-x-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <p className="text-gray-800 dark:text-white font-medium">Menyimpan skor...</p>
+          </div>
+        </div>
+      )}
     </main>
   );
 } 

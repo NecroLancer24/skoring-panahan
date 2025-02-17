@@ -59,14 +59,12 @@ const WizardForm = () => {
       });
       const gameResult = await gameResponse.data;
       
-      // Log untuk memeriksa format data yang dikirim
       const playerDataToSend = formData.players.map(playerName => ({
         nama_player: playerName,
         game_id: gameResult.game.id
       }));
       console.log("Data yang dikirim:", playerDataToSend);
 
-      // Kirim data langsung sebagai array
       const playerResponse = await axios.post("/api/player", playerDataToSend);
       
       const playerResult = await playerResponse.data;

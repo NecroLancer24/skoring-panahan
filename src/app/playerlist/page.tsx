@@ -2,10 +2,32 @@
 import React, {useState, useEffect} from "react";
 import axios from "axios";
 
+enum RoundStatus {
+  PENDING = "PENDING",
+  ACTIVE = "ACTIVE",
+  FINISHED = "FINISHED"
+}
+
+interface Ronde {
+  id: number;
+  game_id: number;
+  round_no: number;
+  status: RoundStatus;
+}
+
 interface Game {
   id: number;
   nama: string;
   maxRonde: number;
+  round: Ronde[];
+}
+
+interface Skor {
+  id: number;
+  game_id: number;
+  round_no: number;
+  player_id: number;
+  skor: number;
 }
 
 interface Player {
@@ -13,21 +35,53 @@ interface Player {
   nama_player: string;
   game_id: number;
   game: Game;
+  scores: Skor[];
 }
 
 export default function PlayerList() {
   const [players, setPlayers] = useState<Player[]>([]);
+  const [games, setGames] = useState<Game[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPlayers = async () => {
-      const response = await axios.get("/api/player");
-      console.log(response.data);
-      setPlayers(response.data);
-      setIsLoading(false);
+    const fetchData = async () => {
+      try {
+        // Fetch players, games, dan scores dalam parallel
+        const [playersResponse, gamesResponse, scoresResponse] = await Promise.all([
+          axios.get("/api/player"),
+          axios.get("/api/game"),
+          axios.get("/api/score")
+        ]);
+
+        // Map players dengan game data dan scores mereka
+        const playersWithGamesAndScores = playersResponse.data.map((player: Player) => ({
+          ...player,
+          game: gamesResponse.data.find((game: Game) => game.id === player.game_id),
+          scores: scoresResponse.data.filter((score: Skor) => score.player_id === player.id)
+        }));
+
+        setPlayers(playersWithGamesAndScores);
+        setGames(gamesResponse.data);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setIsLoading(false);
+      }
     };
-    fetchPlayers();
+
+    fetchData();
   }, []);
+
+  const getCompletedRondes = (player: Player) => {
+    // Menghitung ronde yang selesai (memiliki skor > 0)
+    return player.scores.filter(score => score.skor > 0).length;
+  };
+
+  const getPendingRondes = (player: Player, maxRonde: number) => {
+    // Menghitung ronde yang belum selesai (skor = 0 atau belum ada skor)
+    const completedRounds = getCompletedRondes(player);
+    return maxRonde - completedRounds;
+  };
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -73,12 +127,18 @@ export default function PlayerList() {
                     <p className="text-lg font-semibold text-white truncate">
                       {player.nama_player}
                     </p>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                       <span className="px-3 py-1 bg-blue-500 text-white text-sm rounded-full">
                         Game: {player.game.nama}
                       </span>
                       <span className="px-3 py-1 bg-green-500 text-white text-sm rounded-full">
                         Max Ronde: {player.game.maxRonde}
+                      </span>
+                      <span className="px-3 py-1 bg-emerald-500 text-white text-sm rounded-full">
+                        Ronde Selesai: {getCompletedRondes(player)}
+                      </span>
+                      <span className="px-3 py-1 bg-red-500 text-white text-sm rounded-full">
+                        Ronde Belum Selesai: {getPendingRondes(player, player.game.maxRonde)}
                       </span>
                     </div>
                   </div>

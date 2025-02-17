@@ -16,7 +16,6 @@ export async function POST(req: Request) {
     
     console.log('Data yang diterima:', { game_id, round_no, player_id, skor });
 
-    // Pastikan semua field yang diperlukan ada
     if ( !game_id ||!round_no || !player_id || skor === undefined) {
       return NextResponse.json(
         { success: false, message: 'Data tidak lengkap' },
@@ -24,10 +23,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Menambahkan delay 500ms sebelum menyimpan ke database
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Simpan skor ke database menggunakan Prisma
     const newScore = await prisma.skor.create({
       data: {
         skor: Number(skor),
